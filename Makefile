@@ -12,10 +12,8 @@ IMAGE = $(REGISTRY)/$(USERNAME)/$(NAME)
 help: ## Print help messages
 	@sed -n 's/^\([a-zA-Z_-]*\):.*## \(.*\)$$/\1 -- \2/p' Makefile
 
-build: VERSION = $(shell git describe --always)
 build: ## Build docker image
 	docker build -t $(IMAGE) .
-	docker tag $(IMAGE):latest $(IMAGE):$(VERSION)
 
 test: ## Run simple unit test
 	docker run -d --rm \
@@ -43,9 +41,15 @@ bump: IMPACT = patch
 bump:
 	npm version $(IMPACT)
 
-publish: VERSION = $(shell git describe --always)
+publish: VERSION = $(shell git describe --always | tr -d v)
+publish: MINOR = $(shell echo $(VERSION) | sed -n 's/^\(.\..\).*/\1/p')
 publish: on-tag build ## Push docker image to $(REGISTRY)
+	docker tag $(IMAGE):latest $(IMAGE):$(VERSION)
+	docker tag $(IMAGE):latest $(IMAGE):$(MINOR)
 	docker push $(IMAGE):$(VERSION)
+	docker push $(IMAGE):$(MINOR)
+	docker rmi $(IMAGE):$(VERSION)
+	docker rmi $(IMAGE):$(MINOR)
 	docker push $(IMAGE):latest
 
 # ==
