@@ -1,7 +1,7 @@
-REGISTRY_HOST = docker.io
+REGISTRY = docker.io
 USERNAME = expelledboy
 NAME = $(shell basename $(CURDIR))
-IMAGE = $(REGISTRY_HOST)/$(USERNAME)/$(NAME)
+IMAGE = $(REGISTRY)/$(USERNAME)/$(NAME)
 
 .EXPORT_ALL_VARIABLES:
 .DEFAULT: help
@@ -12,13 +12,15 @@ IMAGE = $(REGISTRY_HOST)/$(USERNAME)/$(NAME)
 help: ## Print help messages
 	@sed -n 's/^\([a-zA-Z_-]*\):.*## \(.*\)$$/\1 -- \2/p' Makefile
 
+build: VERSION = $(shell git describe --always)
 build: ## Build docker image
 	docker build -t $(IMAGE) .
+	docker tag $(IMAGE):latest $(IMAGE):$(VERSION)
 
 test: ## Run simple unit test
 	docker run -d --rm \
 		--name $(NAME) \
-		-v $(PWD):/webhook/ \
+		-v $(PWD):/webhooks/ \
 		-p 3000:3000 \
 		$(IMAGE)
 	sleep 5
@@ -42,8 +44,43 @@ bump: bump-package ## Bump release version eg. `make IMPACT=patch bump`
 	git tag $(VERSION)
 
 publish: VERSION = $(shell git describe --always)
-publish: on-tag build ## Push docker image to $(REGISTRY_HOST)
-	echo docker push $(IMAGE):$(VERSION)
-	echo docker push $(IMAGE):latest
+publish: on-tag build ## Push docker image to $(REGISTRY)
+	docker push $(IMAGE):$(VERSION)
+	docker push $(IMAGE):latest
 
 # ==
+.PHONY: web intro start-webhooks hello-world crash run-webhook
+
+intro:
+	@cat ./docs/welcome.md
+
+web: ## Run webhooks interactively in docker.
+	docker run -it --rm \
+		--name $(NAME) \
+		--volume $(PWD):/webhooks \
+		--publish 80:3000 \
+		expelledboy/make-webhooks
+
+start-webhooks: env-HOSTNAME ## Deploy as service into docker swarm with traefik.
+	docker service create \
+		--name make-webhooks \
+		--mode global \
+		--network web \
+		--mount src="$(PWD)",target=/webhooks,type=bind \
+		--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+		--label traefik.enable=true \
+		--label traefik.docker.network=web \
+		--label traefik.port=3000 \
+		--label traefik.frontend.rule=Host:$(HOSTNAME) \
+		$(IMAGE)
+
+hello-world: GREET ?= "World"
+hello-world: ## Example target using environment variables.
+	@echo "Hello, $(GREET)!"
+
+crash: ## Target that always fails.
+	exit 10
+
+run-webhook: HOOK = hello-world
+run-webhook: ## Run webhook from Makefile and fail on error
+	curl -fs http://localhost/$(HOOK)

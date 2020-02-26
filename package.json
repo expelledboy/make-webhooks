@@ -1,8 +1,8 @@
 {
-  "name": "make-webhook",
+  "name": "make-webhooks",
   "version": "1.0.2",
   "description": "Run make targets through webhooks",
-  "repository": "https://github.com/expelledboy/make-webhook",
+  "repository": "https://github.com/expelledboy/make-webhooks",
   "author": "expelledboy",
   "license": "Apache-2.0",
   "main": "src/server.js",
@@ -34,7 +34,7 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "DEBUG=webhook:* nodemon src/server.js",
+    "dev": "DEBUG=webhooks:* nodemon src/server.js",
     "lint": "eslint src",
     "lint:fix": "npm run lint -- --fix"
   }
