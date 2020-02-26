@@ -28,20 +28,20 @@ test: ## Run simple unit test
 	docker stop $(NAME)
 
 # ==
+.PHONY: dev
+
+dev:
+	npm run dev
+
+# ==
 .PHONY: on-tag bump publish
 
 on-tag:
 	@git describe --exact-match --tags $$(git log -n1 --pretty='%h')
 
-bump-package: IMPACT = patch
-bump-package:
+bump: IMPACT = patch
+bump:
 	npm version $(IMPACT)
-
-bump: VERSION = $(shell node -p "require('./package.json').version")
-bump: bump-package ## Bump release version eg. `make IMPACT=patch bump`
-	git add package.json
-	git commit -m 'Release version $(VERSION)'
-	git tag $(VERSION)
 
 publish: VERSION = $(shell git describe --always)
 publish: on-tag build ## Push docker image to $(REGISTRY)

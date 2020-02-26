@@ -34,7 +34,7 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "DEBUG=webhooks:* nodemon src/server.js",
+    "dev": "MAKE_DIR=$PWD nodemon src/server.js",
     "lint": "eslint src",
     "lint:fix": "npm run lint -- --fix"
   }
