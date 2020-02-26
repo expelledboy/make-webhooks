@@ -1,6 +1,6 @@
 {
   "name": "make-webhook",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Run make targets through webhooks",
   "repository": "https://github.com/expelledboy/make-webhook",
   "author": "expelledboy",
