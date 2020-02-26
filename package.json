@@ -2,9 +2,10 @@
   "name": "make-webhook",
   "version": "1.0.1",
   "description": "Run make targets through webhooks",
-  "main": "src/server.js",
+  "repository": "https://github.com/expelledboy/make-webhook",
   "author": "expelledboy",
   "license": "Apache-2.0",
+  "main": "src/server.js",
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
