@@ -51,6 +51,9 @@ app.get("*", (req, res) => {
     return acc;
   }, {});
 
+  // Use the path spec defined in the running container.
+  ENV.PATH = process.env.PATH;
+
   // Marshal command results into json
   const handleExec = (error, stdout, stderr) => {
     if (error) {
